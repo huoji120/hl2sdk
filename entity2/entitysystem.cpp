@@ -14,10 +14,10 @@ CBaseEntity* CEntitySystem::GetBaseEntity(CEntityIndex entnum)
 	if (!pIdentity)
 		return nullptr;
 
-	if (pIdentity->m_EHandle.GetEntryIndex() != entnum.Get())
+	if (pIdentity->GetEntityIndex() != entnum)
 		return nullptr;
 
-	return dynamic_cast<CBaseEntity*>(pIdentity->m_pInstance);
+	return static_cast<CBaseEntity*>(pIdentity->m_pInstance);
 }
 
 CBaseEntity* CEntitySystem::GetBaseEntity(const CEntityHandle& hEnt)
@@ -33,10 +33,10 @@ CBaseEntity* CEntitySystem::GetBaseEntity(const CEntityHandle& hEnt)
 	if (!pIdentity)
 		return nullptr;
 
-	if (pIdentity->m_EHandle != hEnt)
+	if (pIdentity->GetRefEHandle() != hEnt)
 		return nullptr;
 
-	return dynamic_cast<CBaseEntity*>(pIdentity->m_pInstance);
+	return static_cast<CBaseEntity*>(pIdentity->m_pInstance);
 }
 
 void CGameEntitySystem::AddListenerEntity(IEntityListener* pListener)

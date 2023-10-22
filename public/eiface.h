@@ -27,6 +27,7 @@
 #include "tier1/bufferstring.h"
 #include <steam/steamclientpublic.h>
 #include "playerslot.h"
+#include <iloopmode.h>
 
 //-----------------------------------------------------------------------------
 // forward declarations
@@ -73,7 +74,6 @@ struct RenderDeviceInfo_t;
 struct RenderMultisampleType_t;
 class GameSessionConfiguration_t;
 struct StringTableDef_t;
-struct HostStateLoopModeType_t;
 class ILoopModePrerequisiteRegistry;
 struct URLArgument_t;
 struct vis_info_t;
@@ -89,9 +89,6 @@ namespace google
 		class Message;
 	}
 }
-
-typedef uint32 SpawnGroupHandle_t;
-typedef uint32 SwapChainHandle_t;
 
 //-----------------------------------------------------------------------------
 // defines
@@ -109,25 +106,6 @@ struct bbox_t
 {
 	Vector mins;
 	Vector maxs;
-};
-
-class CEntityIndex
-{
-public:
-	CEntityIndex( int index )
-	{
-		_index = index;
-	}
-	
-	int Get() const
-	{
-		return _index;
-	}
-	
-	int _index;
-
-	bool operator==( const CEntityIndex &other ) const { return other._index == _index; }
-	bool operator!=( const CEntityIndex &other ) const { return other._index != _index; }
 };
 
 class CPlayerUserId
@@ -233,7 +211,7 @@ public:
 	virtual void		Message_DetermineMulticastRecipients( bool usepas, const Vector& origin, CPlayerBitVec& playerbits ) = 0;
 	
 	// Issue a command to the command parser as if it was typed at the server console.
-	virtual void		ServerCommand( const char *str ) = 0;
+	virtual void		ServerCommand( const char *str, ... ) FMTFUNCTION( 2, 3 ) = 0;
 	// Issue the specified command to the specified client (mimics that client typing the command at the console).
 	virtual void		ClientCommand( CPlayerSlot nSlot, const char *szFmt, ... ) FMTFUNCTION( 3, 4 ) = 0;
 	
@@ -527,7 +505,7 @@ public:
 	virtual float			GetTickInterval( void ) const = 0;
 	
 	// Get server maxplayers and lower bound for same
-	virtual void			GetPlayerLimits( int& minplayers, int& maxplayers, int &defaultMaxPlayers, bool &unknown ) const = 0;
+	virtual void			GetPlayerLimits( int& minplayers, int& maxplayers, int &defaultMaxPlayers, bool &bIsMultiplayer ) const = 0;
 	
 	// Returns max splitscreen slot count ( 1 == no splits, 2 for 2-player split screen )
 	virtual int		GetMaxSplitscreenPlayers( void ) = 0;
@@ -539,13 +517,15 @@ public:
 	
 	virtual bool			AllowPlayerToTakeOverBots() = 0;
 	
-	virtual void			OnClientFullyConnect( CEntityIndex index ) = 0;
+	virtual void			OnClientFullyConnect( CEntityIndex nEntityIndex ) = 0;
 	
-	virtual void		GetHostStateLoopModeInfo( HostStateLoopModeType_t, CUtlString &, KeyValues ** ) = 0;
+	virtual void		GetHostStateLoopModeInfo( HostStateLoopModeType_t type, CUtlString &loopModeName, KeyValues **ppLoopModeOptions ) = 0;
 	
 	virtual bool		AllowDedicatedServers( EUniverse universe ) const = 0;
 	
-	virtual void		GetConVarPrefixesToResetToDefaults( CUtlString &prefixes ) const = 0;
+	virtual void		GetConVarPrefixesToResetToDefaults( CUtlString &sSemicolonDelimitedPrefixList ) const = 0;
+
+	virtual bool		AllowSaveRestore() = 0;
 };
 
 #define INTERFACEVERSION_SERVERGAMECLIENTS		"Source2GameClients001"
